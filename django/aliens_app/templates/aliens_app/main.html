@@ -1,0 +1,13 @@
+{% block content %}
+{% if all_employees %}
+<ol>
+    {% for employee in all_employees %}
+    <li>
+        {{ employee.position }} {{employee.name}} from {{employee.country}}
+    </li>
+    {% endfor %}
+</ol>
+{% else %}
+    <p>No employees present</p>
+{% endif %}
+{% endblock %}

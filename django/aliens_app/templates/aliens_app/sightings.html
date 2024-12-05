@@ -1,0 +1,13 @@
+{% block content %}
+{% if all_sightings %}
+<ol>
+    {% for sighting in all_sightings %}
+    <li>
+        {{ sighting.comments }}
+    </li>
+    {% endfor %}
+</ol>
+{% else %}
+    <p>No sightings present</p>
+{% endif %}
+{% endblock %}
