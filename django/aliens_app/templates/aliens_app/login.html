@@ -1,4 +1,4 @@
-{% extends "school_app/main.html" %}
+{% extends "aliens_app/main.html" %}
 
 {% block content %}
 
@@ -16,5 +16,7 @@
     <input type="password" id="password" name="password" required><br>
     <button type="submit">Login</button>
 </form>
+<br>
+<a href="{% url 'register' %}" class="button">Register</a>
 
 {% endblock %}

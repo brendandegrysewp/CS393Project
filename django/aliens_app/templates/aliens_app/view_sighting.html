@@ -1,0 +1,31 @@
+{% extends "aliens_app/main.html" %}
+{% block content %}
+<form action="{% url 'view_sighting' sighting.sightingid %}" method="POST">
+    {% csrf_token %}
+    {{ form }}
+    <!-- Create a new rental <br> 
+
+    <label for="startDate">Start Date</label>
+    <input type="date" name="startDate"> -->
+
+    <input type="submit" value="Submit">
+</form>
+{% if sighting %}
+    <h1> {{ sighting.comments }}</h1>
+{% else %}
+    <p>Invalid Sighting.</p>
+{% endif %}
+<br>
+{% if comments %}
+{% for comment in comments %}
+    <div class="itemcontainer">
+    <!-- <span class="name">{{ comment }}</span> -->
+    <p> {{comment.text}} </p>
+    <span class="time-left">Posted on {{comment.date}}</p>
+    <span class="time-right"> {{comment.believability}} </span>
+    </div>
+{% endfor %}
+{% else %}
+    <p>No comments</p>
+{% endif %}
+{% endblock %}

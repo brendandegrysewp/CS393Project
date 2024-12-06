@@ -31,6 +31,7 @@ class Alientoexpedition(models.Model):
 
 class Comment(models.Model):
     commentid = models.AutoField(db_column='commentId', primary_key=True)  # Field name made lowercase.
+    # ubody = models.ForeignKey(User, models.DO_NOTHING, null=True)
     sightingid = models.ForeignKey('Sighting', models.DO_NOTHING, db_column='sightingId')  # Field name made lowercase.
     text = models.CharField(max_length=1500, blank=True, null=True)
     date = models.DateTimeField(blank=True, null=True)
@@ -76,8 +77,8 @@ class Governmentnote(models.Model):
 
 
 class Sighting(models.Model):
-    sightingid = models.AutoField(db_column='sightingId', primary_key=True)  # Field name made lowercase.
-    userid = models.ForeignKey('User', models.DO_NOTHING, db_column='userId')  # Field name made lowercase.
+    sightingid = models.AutoField(db_column='sightingId', primary_key=True)  # Field name made lowercase.  
+    userid = models.ForeignKey(User, models.DO_NOTHING, db_column='userId')  # Field name made lowercase.
     date = models.DateTimeField(blank=True, null=True)
     comments = models.CharField(max_length=1500, blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
@@ -94,12 +95,12 @@ class Sighting(models.Model):
         db_table = 'sighting'
 
 
-class User(models.Model):
-    userid = models.AutoField(db_column='userId', primary_key=True)  # Field name made lowercase.
-    name = models.CharField(max_length=35, blank=True, null=True)
-    email = models.CharField(max_length=35, blank=True, null=True)
-    datejoined = models.DateTimeField(db_column='dateJoined', blank=True, null=True)  # Field name made lowercase.
+# class User(models.Model):
+    # userid = models.AutoField(db_column='userId', primary_key=True)  # Field name made lowercase.
+    # name = models.CharField(max_length=35, blank=True, null=True)
+    # email = models.CharField(max_length=35, blank=True, null=True)
+    # datejoined = models.DateTimeField(db_column='dateJoined', blank=True, null=True)  # Field name made lowercase.
 
-    class Meta:
-        managed = False
-        db_table = 'user'
+    # class Meta:
+        # managed = False
+        # db_table = 'user'

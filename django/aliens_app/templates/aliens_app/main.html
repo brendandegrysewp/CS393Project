@@ -1,13 +1,40 @@
-{% block content %}
-{% if all_employees %}
-<ol>
-    {% for employee in all_employees %}
-    <li>
-        {{ employee.position }} {{employee.name}} from {{employee.country}}
-    </li>
-    {% endfor %}
-</ol>
-{% else %}
-    <p>No employees present</p>
-{% endif %}
-{% endblock %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Layout</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'aliens_app/styles.css' %}" />
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <a href="{% url 'index' %}">Home</a>
+        <a href="{% url 'sightings' 0%}">View Sightings</a>
+    </nav>
+
+    <!-- Sidebar -->
+    <!-- <aside>
+        {% block sidebar %}
+        <ul>
+            Here's a sidebar
+        </ul>
+        {% endblock %}
+    </aside> -->
+
+    <!-- Main Content Area -->
+    <main>
+        {% block content %}
+        <!-- <h1>Welcome to my ToDo App</h1> -->
+        <!-- <p>I'm a student learning how to make my own web pages!  Please be kind.</p> -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <!-- <footer> -->
+        <!-- <p>Footer Information &copy; 2024</p> -->
+    <!-- </footer> -->
+</body>
+</html>
