@@ -31,6 +31,7 @@ class Alientoexpedition(models.Model):
 
 class Comment(models.Model):
     commentid = models.AutoField(db_column='commentId', primary_key=True)  # Field name made lowercase.
+    # userid = models.ForeignKey(User, models.DO_NOTHING, db_column='userId')  # Field name made lowercase.
     # ubody = models.ForeignKey(User, models.DO_NOTHING, null=True)
     sightingid = models.ForeignKey('Sighting', models.DO_NOTHING, db_column='sightingId')  # Field name made lowercase.
     text = models.CharField(max_length=1500, blank=True, null=True)
@@ -55,6 +56,7 @@ class Expedition(models.Model):
 
 class Governmentemployee(models.Model):
     employeeid = models.AutoField(db_column='employeeId', primary_key=True)  # Field name made lowercase.
+    user = models.ForeignKey(User, models.DO_NOTHING)
     name = models.CharField(max_length=35, blank=True, null=True)
     country = models.CharField(max_length=25, blank=True, null=True)
     position = models.CharField(max_length=35, blank=True, null=True)

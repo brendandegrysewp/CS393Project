@@ -15,6 +15,11 @@
     {% for sighting in all_sightings %}
     <div class="itemcontainer" style="background-color: #2c2c2c;">
         <a href="{% url 'view_sighting' sighting.sightingid %}">{{ sighting.comments }}</a>
+        {%if sighting.believability%}
+            <p style="color: whitesmoke">{{sighting.believability}}</p>
+        {%else%}
+            <p style="color: whitesmoke">No Ratings</p>
+        {%endif%}
     </div>
     {% endfor %}
 <!-- </ul> -->

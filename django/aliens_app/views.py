@@ -1,12 +1,13 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from .models import Governmentemployee, Sighting, Comment, Governmentnote
+from .models import *
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import user_passes_test, login_required, permission_required
 from django.contrib.auth.models import User, Permission
 from django.contrib import messages
 from .forms import *
 import datetime
+from django.contrib.contenttypes.models import ContentType
 
 # Create your views here.
 
@@ -36,13 +37,14 @@ def sightings(request, startIndex):
             newEntry.save()
             # return render(request, "aliens_app/view_sighting.html", context)
     form = SightingForm() 
-    context = {"all_sightings": Sighting.objects.all()[startIndex:startIndex+20], "next": startIndex+20, "current": startIndex, "form": form}
+    context = {"all_sightings": Sighting.objects.raw("SELECT s.sightingId, s.date, s.comments, s.city, s.state, s.shape, s.country, s.duration, s.dateposted, s.longitude, s.latitude, SUM(c.believability) as believability FROM sighting as s LEFT JOIN comment as c ON s.sightingId = c.sightingId GROUP BY s.sightingId")[startIndex:startIndex+20], "next": startIndex+20, "current": startIndex, "form": form}
     return render(request, "aliens_app/sightings.html", context)
 
 # @permission_required(["aliens.isAlien"], login_url='aliens_app/login.html')
 @login_required
 def view_sighting(request, sightingId):
     sighting = Sighting.objects.filter(sightingid=sightingId).get()
+    user = get_object_or_404(User, username=request.user.username)
     if request.method == "POST":
         form = CommentForm(request.POST)
         if form.is_valid():
@@ -54,9 +56,31 @@ def view_sighting(request, sightingId):
                 believability = form.cleaned_data['believability'],
             )
             newEntry.save()
-    form = CommentForm()
+        if user.has_perm("aliens_app.isGov"):
+            form = GovernmentnoteForm(request.POST)
+            if form.is_valid():
+                newEntry = Governmentnote(
+                    sightingid = sighting,
+                    # user = request.user,
+                    employeeid = Governmentemployee.objects.filter(user=user).get(),
+                    text = form.cleaned_data['text'],
+                    date = datetime.datetime.now(),
+                )
+                newEntry.save()
+    else:
+        if user.has_perm("aliens_app.isGov"):
+            form = GovernmentnoteForm()
+        else:
+            form = CommentForm()
+    # User.user_permissions
+    # permission = Permission.objects.get(codename="isGov")
+    # print(permission)
+    # print(user)
+    # user.user_permissions.add(permission)
+    # print(user.get_all_permissions())
     comments = Comment.objects.filter(sightingid=sightingId)
     notes = Governmentnote.objects.filter(sightingid=sightingId)
+    print(notes)
     context = {"sighting": sighting, "comments": comments, "notes": notes, "form": form}
     return render(request, "aliens_app/view_sighting.html", context)
 
@@ -87,6 +111,30 @@ def register(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = User.objects.create_user(form.cleaned_data["username"], form.cleaned_data["email"], form.cleaned_data["password"])
+            if form.cleaned_data["isGov"]:
+                try:
+                    permission = Permission.objects.get(codename="isGov")
+                except:
+                    permission = Permission.objects.create(
+                        codename="isGov",
+                        name="Is a government employee",
+                        content_type = ContentType.objects.get_for_model(Governmentemployee)
+                    )
+                employee = Governmentemployee(user=user, name=user.username,country="USA",position="Top Dog")
+                employee.save()
+                user.user_permissions.add(permission)
+            # print(form.cleaned_data['isAlien'])
+            if form.cleaned_data["isAlien"]:
+                try:
+                    permission = Permission.objects.get(codename="isAlien")
+                except:
+                    permission = Permission.objects.create(
+                        codename="isAlien",
+                        name="Is an alien",
+                        content_type = ContentType.objects.get_for_model(Alien)
+                    )
+                user.user_permissions.add(permission)
+            print(user.user_permissions)
             user.save()
             return redirect("index")
         else:

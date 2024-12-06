@@ -16,12 +16,24 @@
     <p>Invalid Sighting.</p>
 {% endif %}
 <br>
+{% if notes %}
+<h2>Government Notes</h2>
+{% for note in notes %}
+    <div class="itemcontainer">
+    <!-- <span class="name">{{ comment }}</span> -->
+    <p> {{note.text}} </p>
+    <span class="time-left">Posted on {{note.date}}</span>
+    <span class="time-right"> {{note.date}} </span>
+    </div>
+{% endfor %}
+{% endif %}
+<h2>Comments</h2>
 {% if comments %}
 {% for comment in comments %}
     <div class="itemcontainer">
     <!-- <span class="name">{{ comment }}</span> -->
     <p> {{comment.text}} </p>
-    <span class="time-left">Posted on {{comment.date}}</p>
+    <span class="time-left">Posted on {{comment.date}}</span>
     <span class="time-right"> {{comment.believability}} </span>
     </div>
 {% endfor %}

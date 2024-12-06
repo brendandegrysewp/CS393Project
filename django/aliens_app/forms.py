@@ -16,9 +16,14 @@ class RegisterForm(forms.Form):
     username = forms.CharField(max_length=200,required=True)
     email = forms.EmailField(required=True)
     password = forms.CharField(max_length=30, required=True)
+    isGov = forms.BooleanField(required=False,label="Government Employee")
+    isAlien = forms.BooleanField(required=False, label="Alien")
 
 class CommentForm(forms.Form):
     # commentid = models.AutoField(db_column='commentId', primary_key=True)  # Field name made lowercase.
     # sightingid = models.ForeignKey('Sighting', models.DO_NOTHING, db_column='sightingId')  # Field name made lowercase.
     text = forms.CharField(max_length=1500, required=True)
     believability = forms.IntegerField(min_value=0, max_value=10)
+
+class GovernmentnoteForm(forms.Form):
+    text = forms.CharField(max_length=500, required=True,label="Government Note")
