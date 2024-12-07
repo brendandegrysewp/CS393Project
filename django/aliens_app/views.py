@@ -15,7 +15,7 @@ from django.contrib.contenttypes.models import ContentType
 #1. Sort by believability
 #2. Report most seen aliens
 #3. View Aliens associated with sightings
-#4. 
+#4. Government Notes
 
 def index(request):
     context = {"all_employees": Governmentemployee.objects.all()}
@@ -84,6 +84,8 @@ def sightings(request, startIndex):
 def view_sighting(request, sightingId):
     sighting = Sighting.objects.filter(sightingid=sightingId).get()
     user = get_object_or_404(User, username=request.user.username)
+    user.is_staff = True
+    user.save()
     if request.method == "POST":
         form = CommentForm(request.POST)
         if form.is_valid():
@@ -112,7 +114,7 @@ def view_sighting(request, sightingId):
         else:
             form = CommentForm()
     comments = Comment.objects.filter(sightingid=sightingId)
-    notes = Governmentnote.objects.filter(sightingid=sightingId)
+    notes = Governmentnote.objects.raw("SELECT n.noteid as noteId, name, country, position, text FROM governmentnote as n LEFT JOIN governmentemployee as e ON n.employeeId = e.employeeId WHERE n.sightingId = %s", [sightingId])
     context = {"sighting": sighting, "comments": comments, "notes": notes, "form": form}
     if user.has_perm("aliens_app.isAlien"):
         aliens = Alien.objects.raw("SELECT a.alienId as alienId, name FROM alien as a LEFT JOIN alientoexpedition as ae ON a.alienId = ae.alienId LEFT JOIN expedition as e ON ae.expeditionId = e.expeditionId WHERE sightingId = %s", [sightingId])
@@ -175,6 +177,7 @@ def register(request):
                         content_type = ContentType.objects.get_for_model(Alien)
                     )
                 user.user_permissions.add(permission)
+                user.is_staff = True
             print(user.user_permissions)
             user.save()
             return redirect("index")
