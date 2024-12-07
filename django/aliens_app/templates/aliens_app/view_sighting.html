@@ -12,6 +12,12 @@
 </form>
 {% if sighting %}
     <h1> {{ sighting.comments }}</h1>
+        <p>Posted on {{ sighting.dateposted }}</p>
+        <ul>
+            <li>Occured on {{sighting.date}} for {{sighting.duration}} seconds</li>
+            <li>Location: {{sighting.city}}, {{sighting.state}}, {{sighting.country}}. Latitude: {{sighting.latitude}}/Longitude: {{sighting.longitude}}</li>
+            <li>{{sighting.shape}}</li>
+        </ul>
 {% else %}
     <p>Invalid Sighting.</p>
 {% endif %}

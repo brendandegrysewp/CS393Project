@@ -11,6 +11,12 @@ from django.contrib.contenttypes.models import ContentType
 
 # Create your views here.
 
+#Complex queries:
+#1. Sort by believability
+#2. Report most seen aliens
+#3. View Aliens associated with sightings
+#4. 
+
 def index(request):
     context = {"all_employees": Governmentemployee.objects.all()}
     return render(request, "aliens_app/main.html", context)
@@ -18,7 +24,9 @@ def index(request):
 # @permission_required(["aliens.isAlien"], login_url='aliens_app/login.html')
 @login_required
 def sightings(request, startIndex):
-    all_sightings = Sighting.objects.raw("SELECT s.sightingId, s.date, s.comments, s.city, s.state, s.shape, s.country, s.duration, s.dateposted, s.longitude, s.latitude, SUM(c.believability) as sum, AVG(c.believability) as average FROM sighting as s LEFT JOIN comment as c ON s.sightingId = c.sightingId GROUP BY s.sightingId ORDER BY sum DESC")[startIndex:startIndex+20]
+    all_sightings = Sighting.objects.raw("SELECT s.sightingId, s.date, s.comments, s.city, s.state, s.shape, s.country, s.duration, s.dateposted, s.longitude, s.latitude, SUM(c.believability) as sum, AVG(c.believability) as average FROM sighting as s LEFT JOIN comment as c ON s.sightingId = c.sightingId GROUP BY s.sightingId ORDER BY sum DESC")
+    length = len(all_sightings)
+    all_sightings = all_sightings[startIndex:startIndex+20]
     sform = SortForm()
     if request.method == "POST":
         form = SightingForm(request.POST)
@@ -64,9 +72,11 @@ def sightings(request, startIndex):
             sort = "DESC"
         print(sform.cleaned_data)
         print(highLat,lowLat,highLong,lowLong,sort)
-        all_sightings = Sighting.objects.raw(f"SELECT s.sightingId, s.date, s.comments, s.city, s.state, s.shape, s.country, s.duration, s.dateposted, s.longitude, s.latitude, SUM(c.believability) as sum, AVG(c.believability) as average FROM sighting as s LEFT JOIN comment as c ON s.sightingId = c.sightingId WHERE latitude <= %s and latitude >= %s and longitude <= %s and longitude >= %s GROUP BY s.sightingId ORDER BY sum {sort}", [highLat,lowLat,highLong,lowLong])[startIndex:startIndex+20]
+        all_sightings = Sighting.objects.raw(f"SELECT s.sightingId, s.date, s.comments, s.city, s.state, s.shape, s.country, s.duration, s.dateposted, s.longitude, s.latitude, SUM(c.believability) as sum, AVG(c.believability) as average FROM sighting as s LEFT JOIN comment as c ON s.sightingId = c.sightingId WHERE latitude <= %s and latitude >= %s and longitude <= %s and longitude >= %s GROUP BY s.sightingId ORDER BY sum {sort}", [highLat,lowLat,highLong,lowLong])
+        length = len(all_sightings)
+        all_sightings = all_sightings[startIndex:startIndex+20]
     form = SightingForm() 
-    context = {"all_sightings": all_sightings, "next": startIndex+20, "current": startIndex, "form": form, "sort": sform}
+    context = {"all_sightings": all_sightings, "length": length, "next": startIndex+20, "current": startIndex, "form": form, "sort": sform}
     return render(request, "aliens_app/sightings.html", context)
 
 # @permission_required(["aliens.isAlien"], login_url='aliens_app/login.html')
