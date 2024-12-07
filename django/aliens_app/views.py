@@ -18,9 +18,11 @@ def index(request):
 # @permission_required(["aliens.isAlien"], login_url='aliens_app/login.html')
 @login_required
 def sightings(request, startIndex):
+    all_sightings = Sighting.objects.raw("SELECT s.sightingId, s.date, s.comments, s.city, s.state, s.shape, s.country, s.duration, s.dateposted, s.longitude, s.latitude, SUM(c.believability) as sum, AVG(c.believability) as average FROM sighting as s LEFT JOIN comment as c ON s.sightingId = c.sightingId GROUP BY s.sightingId ORDER BY sum DESC")[startIndex:startIndex+20]
+    sform = SortForm()
     if request.method == "POST":
         form = SightingForm(request.POST)
-        if form.is_valid():
+        if form.is_valid() and "comments" in form.cleaned_data:
             newEntry = Sighting(
                 userid = request.user,
                 date = form.cleaned_data['date'],
@@ -36,8 +38,35 @@ def sightings(request, startIndex):
             )
             newEntry.save()
             # return render(request, "aliens_app/view_sighting.html", context)
+        sform = SortForm(request.POST)
+        print(request.POST)
+        print(sform.is_valid())
+        # if sform.is_valid():
+        if "highLat" in sform.cleaned_data and sform.cleaned_data["highLat"] != None:
+            highLat = sform.cleaned_data["highLat"]
+        else:
+            highLat = 90
+        if "lowLat" in sform.cleaned_data and sform.cleaned_data["lowLat"] != None:
+            lowLat = sform.cleaned_data["lowLat"]
+        else:
+            lowLat = -90
+        if "highLong" in sform.cleaned_data and sform.cleaned_data["highLong"] != None:
+            highLong = sform.cleaned_data["highLong"]
+        else:
+            highLong = 90
+        if "lowLong" in sform.cleaned_data and sform.cleaned_data["lowLong"] != None:
+            lowLong = sform.cleaned_data["lowLong"]
+        else:
+            lowLong = -90
+        if "sort" in request.POST and request.POST["sort"] != []:
+            sort = request.POST["sort"]
+        else:
+            sort = "DESC"
+        print(sform.cleaned_data)
+        print(highLat,lowLat,highLong,lowLong,sort)
+        all_sightings = Sighting.objects.raw(f"SELECT s.sightingId, s.date, s.comments, s.city, s.state, s.shape, s.country, s.duration, s.dateposted, s.longitude, s.latitude, SUM(c.believability) as sum, AVG(c.believability) as average FROM sighting as s LEFT JOIN comment as c ON s.sightingId = c.sightingId WHERE latitude <= %s and latitude >= %s and longitude <= %s and longitude >= %s GROUP BY s.sightingId ORDER BY sum {sort}", [highLat,lowLat,highLong,lowLong])[startIndex:startIndex+20]
     form = SightingForm() 
-    context = {"all_sightings": Sighting.objects.raw("SELECT s.sightingId, s.date, s.comments, s.city, s.state, s.shape, s.country, s.duration, s.dateposted, s.longitude, s.latitude, SUM(c.believability) as sum, AVG(c.believability) as average FROM sighting as s LEFT JOIN comment as c ON s.sightingId = c.sightingId GROUP BY s.sightingId ORDER BY sum DESC")[startIndex:startIndex+20], "next": startIndex+20, "current": startIndex, "form": form}
+    context = {"all_sightings": all_sightings, "next": startIndex+20, "current": startIndex, "form": form, "sort": sform}
     return render(request, "aliens_app/sightings.html", context)
 
 # @permission_required(["aliens.isAlien"], login_url='aliens_app/login.html')

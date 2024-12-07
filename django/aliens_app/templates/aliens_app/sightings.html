@@ -1,5 +1,6 @@
 {% extends "aliens_app/main.html" %}
 {% block content %}
+<h2>Report a Sighting</h2>
 <form action="{% url 'sightings' current %}" method="POST">
     {% csrf_token %}
     {{ form }}
@@ -7,6 +8,13 @@
 
     <label for="startDate">Start Date</label>
     <input type="date" name="startDate"> -->
+    <input type="submit" value="Submit">
+</form>
+<form action="{% url 'sightings' current %}" method="POST">
+    {% csrf_token %}
+
+    <h2>Sort and Filter</h2>
+    {{ sort }}
 
     <input type="submit" value="Submit">
 </form>
