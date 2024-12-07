@@ -1,7 +1,10 @@
 DROP DATABASE IF EXISTS aliens;
 CREATE DATABASE aliens;
-GRANT ALL privileges on aliens.* TO 'django'@'localhost' WITH grant option;
 USE aliens;
+GRANT ALL privileges on aliens.* TO 'django'@'localhost' WITH grant option;
+#SELECT * FROM auth_user_user_permissions;
+#DELETE FROM auth_user;
+#SELECT COUNT(sightingId) FROM sighting;#86019
 CREATE TABLE User (
 	userId INTEGER PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(35),
@@ -43,6 +46,9 @@ CREATE TABLE GovernmentEmployee (
     country VARCHAR(25),
     position VARCHAR(35)
 );
+ALTER TABLE governmentemployee
+ADD COLUMN user_id INT,
+ADD CONSTRAINT FOREIGN KEY (user_id) REFERENCES auth_user(id);
 SELECT * FROM GovernmentEmployee;
 
 CREATE TABLE GovernmentNote (

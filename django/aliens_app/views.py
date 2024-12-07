@@ -37,7 +37,7 @@ def sightings(request, startIndex):
             newEntry.save()
             # return render(request, "aliens_app/view_sighting.html", context)
     form = SightingForm() 
-    context = {"all_sightings": Sighting.objects.raw("SELECT s.sightingId, s.date, s.comments, s.city, s.state, s.shape, s.country, s.duration, s.dateposted, s.longitude, s.latitude, SUM(c.believability) as believability FROM sighting as s LEFT JOIN comment as c ON s.sightingId = c.sightingId GROUP BY s.sightingId")[startIndex:startIndex+20], "next": startIndex+20, "current": startIndex, "form": form}
+    context = {"all_sightings": Sighting.objects.raw("SELECT s.sightingId, s.date, s.comments, s.city, s.state, s.shape, s.country, s.duration, s.dateposted, s.longitude, s.latitude, SUM(c.believability) as sum, AVG(c.believability) as average FROM sighting as s LEFT JOIN comment as c ON s.sightingId = c.sightingId GROUP BY s.sightingId ORDER BY sum DESC")[startIndex:startIndex+20], "next": startIndex+20, "current": startIndex, "form": form}
     return render(request, "aliens_app/sightings.html", context)
 
 # @permission_required(["aliens.isAlien"], login_url='aliens_app/login.html')
@@ -72,17 +72,19 @@ def view_sighting(request, sightingId):
             form = GovernmentnoteForm()
         else:
             form = CommentForm()
-    # User.user_permissions
-    # permission = Permission.objects.get(codename="isGov")
-    # print(permission)
-    # print(user)
-    # user.user_permissions.add(permission)
-    # print(user.get_all_permissions())
     comments = Comment.objects.filter(sightingid=sightingId)
     notes = Governmentnote.objects.filter(sightingid=sightingId)
-    print(notes)
     context = {"sighting": sighting, "comments": comments, "notes": notes, "form": form}
+    if user.has_perm("aliens_app.isAlien"):
+        aliens = Alien.objects.raw("SELECT a.alienId as alienId, name FROM alien as a LEFT JOIN alientoexpedition as ae ON a.alienId = ae.alienId LEFT JOIN expedition as e ON ae.expeditionId = e.expeditionId WHERE sightingId = %s", [sightingId])
+        # print(aliens)
+        context['aliens'] = aliens
     return render(request, "aliens_app/view_sighting.html", context)
+
+@permission_required(["aliens_app.isAlien"], login_url='aliens_app/login.html')
+def reports(request):
+    context = {"all_aliens": Alien.objects.raw("SELECT a.alienId, name, COUNT(ae.expeditionId) as spotted FROM alien as a LEFT JOIN alientoexpedition as ae ON a.alienId = ae.alienId LEFT JOIN expedition as e ON ae.expeditionId = e.expeditionId GROUP BY a.alienId, a.name ORDER BY spotted DESC")}
+    return render(request, "aliens_app/reports.html", context)
 
 def login(request):
     if request.method == "POST":

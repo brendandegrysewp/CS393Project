@@ -1,0 +1,14 @@
+{% extends "aliens_app/main.html" %}
+{% block content %}
+{% if all_aliens %}
+<!-- <ul> -->
+    {% for alien in all_aliens %}
+    <div class="itemcontainer" style="background-color: #2c2c2c;">
+        <p style="color: whitesmoke">{{ alien.name }} has been spotted {{alien.spotted}} times.</a>
+    </div>
+    {% endfor %}
+<!-- </ul> -->
+{% else %}
+    <p>No aliens have been spotted.</p>
+{% endif %}
+{% endblock %}

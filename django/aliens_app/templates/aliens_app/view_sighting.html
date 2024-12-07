@@ -16,6 +16,15 @@
     <p>Invalid Sighting.</p>
 {% endif %}
 <br>
+{% if aliens %}
+<h2>Aliens</h2>
+{% for alien in aliens %}
+    <div class="itemcontainer">
+    <!-- <span class="name">{{ comment }}</span> -->
+    <p> {{alien.name}} </p>
+    </div>
+{% endfor %}
+{% endif %}
 {% if notes %}
 <h2>Government Notes</h2>
 {% for note in notes %}
