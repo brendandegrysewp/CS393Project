@@ -8,7 +8,7 @@ class SightingForm(forms.Form):
     shape = forms.CharField(max_length=25, required=False)
     country = forms.CharField(max_length=255, required=False)
     duration = forms.IntegerField(required=False)
-    dateposted = forms.DateTimeField(required=False)
+    # dateposted = forms.DateTimeField(required=False)
     longitude = forms.FloatField(required=False)
     latitude = forms.FloatField(required=False)
 
@@ -18,6 +18,7 @@ class RegisterForm(forms.Form):
     password = forms.CharField(max_length=30, required=True)
     isGov = forms.BooleanField(required=False,label="Government Employee")
     isAlien = forms.BooleanField(required=False, label="Alien")
+    isAdmin = forms.BooleanField(required=False, label="Admin")
 
 class CommentForm(forms.Form):
     # commentid = models.AutoField(db_column='commentId', primary_key=True)  # Field name made lowercase.

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from .models import *
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
-from django.contrib.auth.decorators import user_passes_test, login_required, permission_required
+from django.contrib.auth.decorators import *
 from django.contrib.auth.models import User, Permission
 from django.contrib import messages
 from .forms import *
@@ -30,9 +30,9 @@ def sightings(request, startIndex):
     sform = SortForm()
     if request.method == "POST":
         form = SightingForm(request.POST)
-        if form.is_valid() and "comments" in form.cleaned_data:
+        if form.is_valid() and "comments" in form.cleaned_data and form.cleaned_data["comments"] != '':
             newEntry = Sighting(
-                userid = request.user,
+                userid = get_object_or_404(User, username=request.user.username),
                 date = form.cleaned_data['date'],
                 comments = form.cleaned_data['comments'],
                 city = form.cleaned_data['city'],
@@ -40,10 +40,11 @@ def sightings(request, startIndex):
                 shape = form.cleaned_data['shape'],
                 country = form.cleaned_data['country'],
                 duration = form.cleaned_data['duration'],
-                dateposted = form.cleaned_data['dateposted'],
+                dateposted = datetime.datetime.now(),#form.cleaned_data['dateposted'],
                 longitude = form.cleaned_data['longitude'],
                 latitude = form.cleaned_data['latitude'],
             )
+            print(newEntry.userid)
             newEntry.save()
             # return render(request, "aliens_app/view_sighting.html", context)
         sform = SortForm(request.POST)
@@ -73,6 +74,7 @@ def sightings(request, startIndex):
         print(sform.cleaned_data)
         print(highLat,lowLat,highLong,lowLong,sort)
         all_sightings = Sighting.objects.raw(f"SELECT s.sightingId, s.date, s.comments, s.city, s.state, s.shape, s.country, s.duration, s.dateposted, s.longitude, s.latitude, SUM(c.believability) as sum, AVG(c.believability) as average FROM sighting as s LEFT JOIN comment as c ON s.sightingId = c.sightingId WHERE latitude <= %s and latitude >= %s and longitude <= %s and longitude >= %s GROUP BY s.sightingId ORDER BY sum {sort}", [highLat,lowLat,highLong,lowLong])
+        print(all_sightings.query)
         length = len(all_sightings)
         all_sightings = all_sightings[startIndex:startIndex+20]
     form = SightingForm() 
@@ -127,6 +129,26 @@ def reports(request):
     context = {"all_aliens": Alien.objects.raw("SELECT a.alienId, name, COUNT(ae.expeditionId) as spotted FROM alien as a LEFT JOIN alientoexpedition as ae ON a.alienId = ae.alienId LEFT JOIN expedition as e ON ae.expeditionId = e.expeditionId GROUP BY a.alienId, a.name ORDER BY spotted DESC")}
     return render(request, "aliens_app/reports.html", context)
 
+@login_required
+def administer(request):
+    if request.user.is_staff:
+        users = User.objects.all()
+        return render(request, "aliens_app/admin.html", context={"users": users})
+    else:
+        return redirect(index)
+
+@login_required
+def del_user(request,username):
+    if request.user.is_staff:
+        user = get_object_or_404(User, username=username)
+        try:
+            user.delete()
+        except Exception as e:
+            return redirect(administer)
+        return redirect(administer)
+    else:
+        return redirect(index)
+
 def login(request):
     if request.method == "POST":
         user = authenticate(
@@ -177,8 +199,9 @@ def register(request):
                         content_type = ContentType.objects.get_for_model(Alien)
                     )
                 user.user_permissions.add(permission)
-                user.is_staff = True
             print(user.user_permissions)
+            if form.cleaned_data["isAdmin"]:
+                user.is_staff = True
             user.save()
             return redirect("index")
         else:
